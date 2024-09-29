@@ -1,1 +1,66 @@
 
+public class HijriDateConverter {
+
+    // Method to convert Gregorian date to Hijri
+    public static String convertToHijri(Date gregorianDate) {
+        if (gregorianDate == null) {
+            return null;
+        }
+
+        // Get the day, month, and year from the Gregorian date
+        Integer day = gregorianDate.day();
+        Integer month = gregorianDate.month(); // Salesforce months are 1-based, same as Java
+        Integer year = gregorianDate.year();
+
+        // Adjustment parameters (adjust according to your needs)
+        if (month < 3) {
+            year -= 1;
+            month += 12;
+        }
+
+        double a = Math.floor(year / 100);
+        double b = 2 - a + Math.floor(a / 4);
+
+        // Julian Day Number (jd)
+        double jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524;
+
+        // Constants for Hijri date calculation
+        double epochastro = 1948084;  // Adjust epoch if necessary
+        double shift1 = 8.01 / 60;    // Minor adjustment for precision
+        double z = jd - epochastro;
+
+        // Calculate cycles and remaining days
+        double cyc = Math.floor(z / 10631);
+        z = z - 10631 * cyc;
+        double j = Math.floor((z - shift1) / (10631.0 / 30));
+        double iy = 30 * cyc + j;
+
+        // Adjust z to calculate remaining days and months
+        z = z - Math.floor(j * (10631.0 / 30) + shift1);
+
+        // Month calculation with better precision
+        double im = Math.floor((z + 28.5001) / 29.5001);
+
+        // Handling special case for month 13
+        if (im == 13) {
+            im = 12;
+        }
+
+        // Calculate day with improved precision
+        double id = z - Math.floor(29.5001 * im - 29);
+
+        // Adjust day if rounding issue is detected
+        if (id == 0) {
+            id = 29;
+        }
+
+        // Format as DD/MM/YYYY
+        String hijriDay = id < 10 ? '0' + String.valueOf((Integer) id) : String.valueOf((Integer) id);
+        String hijriMonth = im < 10 ? '0' + String.valueOf((Integer) im) : String.valueOf((Integer) im);
+        String hijriYear = String.valueOf((Integer) iy);
+
+        // Return formatted Hijri date as dd/mm/yyyy
+        // put this returned value in a text field called (Hijri Date)
+        return hijriDay + '/' + hijriMonth + '/' + hijriYear;
+    }
+}
