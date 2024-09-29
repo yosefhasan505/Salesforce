@@ -1,1 +1,46 @@
+public class CalculateBusinessHrs {
 
+    @InvocableMethod(label='Calculate Duration in Hours' description='Returns the duration in hours between two DateTime values considering Business Hours provided as input')
+    public static List<DurationOutput> calculateDuration(List<DurationInput> inputs) {
+        List<DurationOutput> results = new List<DurationOutput>();
+
+        for (DurationInput input : inputs) {
+            DurationOutput output = new DurationOutput();
+
+            // If BusinessHoursId is not provided, skip the calculation
+            if (input.BusinessHoursId == null) {
+                output.DurationInHours = null;  // You may set a default value or handle this case differently
+                results.add(output);
+                continue;
+            }
+
+            // Calculate the duration in milliseconds using the provided Business Hours
+            Long durationInMillis = BusinessHours.diff(input.BusinessHoursId, input.StartTime, input.EndTime);
+
+            // Convert milliseconds to hours
+            Double durationInHours = durationInMillis / (1000.0 * 60.0 * 60.0);
+            output.DurationInHours = durationInHours;
+
+            // Add result to the list
+            results.add(output);
+        }
+
+        return results;
+    }
+
+    public class DurationInput {
+        @InvocableVariable(label='Start Time' required=true)
+        public DateTime StartTime;
+
+        @InvocableVariable(label='End Time' required=true)
+        public DateTime EndTime;
+
+        @InvocableVariable(label='Business Hours Id' required=true)
+        public Id BusinessHoursId;  // to accept Business Hours Id as input
+    }
+
+    public class DurationOutput {
+        @InvocableVariable(label='Duration in Hours')
+        public Double DurationInHours;
+    }
+}
