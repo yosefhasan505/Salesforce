@@ -1,0 +1,27 @@
+@isTest
+public class HijriDateConverterTest {
+
+    // Test the convertToHijri method
+    @isTest
+    static void testConvertToHijri() {
+        // Set a known Gregorian date
+        Date gregorianDate = Date.newInstance(2024, 2, 15); // 15th February 2024
+        
+        // Call the method
+        String hijriDate = HijriDateConverter.convertToHijri(gregorianDate);
+        
+        // Verify the returned Hijri date
+        System.assertNotEquals(hijriDate, null, 'Hijri date should not be null');
+        System.assert(hijriDate.contains('/'), 'Hijri date should be formatted as DD/MM/YYYY');
+    }
+    
+    // Test for null dates
+    @isTest
+    static void testConvertToHijriNullDate() {
+        // Call the method with null
+        String hijriDate = HijriDateConverter.convertToHijri(null);
+        
+        // Assert that the return value is null
+        System.assertEquals(hijriDate, null, 'Hijri date should be null when Gregorian date is null');
+    }
+}
