@@ -59,6 +59,7 @@ public class HijriDateConverter {
         String hijriYear = String.valueOf((Integer) iy);
 
         // Return formatted Hijri date as dd/mm/yyyy
+        // Can use this return value insert it in a text field called (Hijri Date)
         return hijriDay + '/' + hijriMonth + '/' + hijriYear;
     }
 }
