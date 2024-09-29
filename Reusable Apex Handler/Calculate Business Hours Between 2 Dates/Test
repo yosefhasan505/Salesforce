@@ -1,1 +1,74 @@
+@IsTest
+private class CalculateBusinessHrsTest {
 
+    @IsTest
+    static void testCalculateDurationWithDefaultBusinessHours() {
+        // Query for the default Business Hours in the org
+        BusinessHours defaultBH = [SELECT Id, Name FROM BusinessHours WHERE IsDefault = true LIMIT 1];
+        System.assertNotEquals(null, defaultBH, 'No default Business Hours found.');
+
+        // Prepare test data: Create a DurationInput record using the default Business Hours
+        CalculateBusinessHrs.DurationInput input = new CalculateBusinessHrs.DurationInput();
+        input.StartTime = DateTime.newInstanceGmt(2023, 4, 5, 10, 0, 0); // 5th April 2023, 10:00 AM
+        input.EndTime = DateTime.newInstanceGmt(2023, 4, 5, 12, 0, 0);   // 5th April 2023, 12:00 PM
+        input.BusinessHoursId = defaultBH.Id; // Use the default Business Hours ID
+
+        // List of inputs to pass to the Invocable method
+        List<CalculateBusinessHrs.DurationInput> inputs = new List<CalculateBusinessHrs.DurationInput>{ input };
+
+        Test.startTest();
+        // Invoke the calculateDuration method with the default Business Hours Id and test data
+        List<CalculateBusinessHrs.DurationOutput> results = CalculateBusinessHrs.calculateDuration(inputs);
+        Test.stopTest();
+        
+        // Verify the results
+        System.assertEquals(1, results.size(), 'Expected one result');
+        System.assertEquals(2.0, results[0].DurationInHours, 'Expected duration is 2 hours within default business hours.');
+    }
+
+    @IsTest
+    static void testCalculateDurationSpanningMultipleDays() {
+        // Query for the default Business Hours in the org
+        BusinessHours defaultBH = [SELECT Id, Name FROM BusinessHours WHERE IsDefault = true LIMIT 1];
+        System.assertNotEquals(null, defaultBH, 'No default Business Hours found.');
+
+        // Prepare test data: Create a DurationInput record that spans multiple days
+        CalculateBusinessHrs.DurationInput input = new CalculateBusinessHrs.DurationInput();
+        input.StartTime = DateTime.newInstanceGmt(2023, 4, 5, 16, 0, 0); // 5th April 2023, 4:00 PM
+        input.EndTime = DateTime.newInstanceGmt(2023, 4, 6, 10, 0, 0);   // 6th April 2023, 10:00 AM
+        input.BusinessHoursId = defaultBH.Id; // Use the default Business Hours ID
+
+        // List of inputs to pass to the Invocable method
+        List<CalculateBusinessHrs.DurationInput> inputs = new List<CalculateBusinessHrs.DurationInput>{ input };
+
+        Test.startTest();
+        // Invoke the calculateDuration method with the default Business Hours Id and test data
+        List<CalculateBusinessHrs.DurationOutput> results = CalculateBusinessHrs.calculateDuration(inputs);
+        Test.stopTest();
+
+        // Verify the results
+        System.assertEquals(1, results.size(), 'Expected one result');
+        System.assert(results[0].DurationInHours > 0, 'Expected positive duration for the span across multiple business days.');
+    }
+
+    @IsTest
+    static void testCalculateDurationWithNullBusinessHoursId() {
+        // Prepare test data: Create a DurationInput record with null BusinessHoursId
+        CalculateBusinessHrs.DurationInput input = new CalculateBusinessHrs.DurationInput();
+        input.StartTime = DateTime.newInstanceGmt(2023, 4, 5, 10, 0, 0); // 5th April 2023, 10:00 AM
+        input.EndTime = DateTime.newInstanceGmt(2023, 4, 5, 12, 0, 0);   // 5th April 2023, 12:00 PM
+        input.BusinessHoursId = null; // Null BusinessHoursId
+
+        // List of inputs to pass to the Invocable method
+        List<CalculateBusinessHrs.DurationInput> inputs = new List<CalculateBusinessHrs.DurationInput>{ input };
+
+        Test.startTest();
+        // Invoke the calculateDuration method with a null Business Hours Id
+        List<CalculateBusinessHrs.DurationOutput> results = CalculateBusinessHrs.calculateDuration(inputs);
+        Test.stopTest();
+
+        // Verify the results
+        System.assertEquals(1, results.size(), 'Expected one result');
+        System.assertEquals(null, results[0].DurationInHours, 'Expected duration to be null with null Business Hours Id.');
+    }
+}
